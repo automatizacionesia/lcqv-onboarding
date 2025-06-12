@@ -127,7 +127,7 @@ export default function RestaurantForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          id: userData.id // Incluir el ID del restaurante desde el contexto
+          id: userData?.id || '' // Usar el operador opcional y proporcionar un valor por defecto
         }),
       });
       

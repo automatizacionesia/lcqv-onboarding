@@ -140,7 +140,7 @@ export default function RestaurantForm2() {
         ...form,
         menuPDF: menuPDFBase64,
         logo: logoBase64,
-        id: userData?.id,
+        id: userData?.id || '',
         timestamp: new Date().toISOString()
       };
 
