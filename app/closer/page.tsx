@@ -164,7 +164,7 @@ export default function CloserPage() {
     
     try {
       // Mostrar toast de carga
-      const loadingToastId = notify.loading('Generando ID único...');
+      const loadingToastId: string = String(notify.loading('Generando ID único...'));
       
       const response = await apiService.generateId(formData);
       
