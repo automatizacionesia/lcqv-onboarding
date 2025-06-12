@@ -108,6 +108,10 @@ export default function RestaurantForm2() {
 
   const convertFileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
+      if (!(file instanceof Blob)) {
+        reject(new Error('El archivo no es válido'));
+        return;
+      }
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => resolve(reader.result as string);
@@ -128,11 +132,18 @@ export default function RestaurantForm2() {
       let menuPDFBase64 = null;
       let logoBase64 = null;
 
-      if (form.menuPDF) {
-        menuPDFBase64 = await convertFileToBase64(form.menuPDF);
-      }
-      if (form.logo) {
-        logoBase64 = await convertFileToBase64(form.logo);
+      try {
+        if (form.menuPDF) {
+          menuPDFBase64 = await convertFileToBase64(form.menuPDF);
+        }
+        if (form.logo) {
+          logoBase64 = await convertFileToBase64(form.logo);
+        }
+      } catch (error) {
+        console.error('Error al procesar archivos:', error);
+        alert('Hubo un error al procesar los archivos. Por favor, asegúrate de que los archivos sean válidos e intenta nuevamente.');
+        setIsSubmitting(false);
+        return;
       }
 
       // Preparar los datos para el webhook
@@ -182,7 +193,7 @@ export default function RestaurantForm2() {
       router.push('/restaurant/form/page3');
     } catch (error) {
       console.error('Error al enviar datos:', error);
-      alert('Hubo un error al enviar los datos. Por favor, intenta nuevamente.');
+      alert('Hubo un error al enviar los datos. Por favor, verifica tu conexión e intenta nuevamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -430,8 +441,10 @@ export default function RestaurantForm2() {
                   accept=".pdf"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
+                    if (file && file instanceof Blob) {
                       setForm(prev => ({ ...prev, menuPDF: file }));
+                    } else {
+                      alert('Por favor, selecciona un archivo PDF válido');
                     }
                   }}
                   className="input w-full"
@@ -470,8 +483,10 @@ export default function RestaurantForm2() {
               accept="image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) {
+                if (file && file instanceof Blob) {
                   setForm(prev => ({ ...prev, logo: file }));
+                } else {
+                  alert('Por favor, selecciona una imagen válida');
                 }
               }}
               className="input w-full"
@@ -515,6 +530,37 @@ export default function RestaurantForm2() {
                 <p className="text-sm text-gray-600 mt-1">Si un usuario requiere hablar con un humano, a dónde se envían si quieren hacer un domicilio o una reserva, etc.</p>
               </div>
             </div>
+          </div>
+
+          <div>
+            <label className="block font-medium mb-2">¿Deseas incluir WhatsApp en tu sistema? *</label>
+            <div className="flex gap-4 mb-2">
+              <button
+                type="button"
+                onClick={() => setForm(prev => ({ ...prev, incluirWhatsApp: true }))}
+                className={`px-4 py-2 rounded-md font-semibold shadow ${
+                  form.incluirWhatsApp === true
+                    ? "bg-agilidad text-white"
+                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                }`}
+              >
+                Sí
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm(prev => ({ ...prev, incluirWhatsApp: false }))}
+                className={`px-4 py-2 rounded-md font-semibold shadow ${
+                  form.incluirWhatsApp === false
+                    ? "bg-agilidad text-white"
+                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                }`}
+              >
+                No
+              </button>
+            </div>
+            <p className="text-sm text-electricidad mt-2 bg-frescura/10 p-3 rounded-md">
+              💬 Recuerda poner tu nombre y tu número también si deseas entrar a este grupo!
+            </p>
           </div>
 
           <motion.button

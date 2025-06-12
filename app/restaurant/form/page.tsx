@@ -194,7 +194,7 @@ export default function RestaurantForm() {
             {form.serviciosPotenciar.length > 1 && (
               <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-yellow-700 text-sm">
-                  La inversión en pauta que te sugerimos está pensada para atraer personas a tu punto físico y sumar un objetivo más de conversación (Reservas o Domicilios). Si eliges solo punto físico canalizaremos todo allí, Si elijes las trés, ten presente que el presupuesto incrementará 25%. IMPORTANTE: Elije tu fuerte, no elijas un objetivo en el que eres débil, queremos potenciar tu fuerte y para más adelante explirar otras oportunidades. (Ejemplo: Si soy fuerte en domicilios, elijo ese objetivo. Si mi público no pide domicilios o reserva, sino que llega al punto físico directamente, elijo ese objetivo. etc)
+                  La inversión en pauta que te sugerimos está pensada para atraer personas a tu punto físico y sumar un objetivo más de conversación (Reservas o Domicilios). Si eliges solo punto físico canalizaremos todo allí. Si eliges más de un objetivo, ten presente que el presupuesto incrementará un 25% por cada objetivo adicional. IMPORTANTE: Elige tu fuerte, no elijas un objetivo en el que eres débil, queremos potenciar tu fuerte y para más adelante explorar otras oportunidades. (Ejemplo: Si soy fuerte en domicilios, elijo ese objetivo. Si mi público no pide domicilios o reserva, sino que llega al punto físico directamente, elijo ese objetivo, etc.)
                 </p>
               </div>
             )}
