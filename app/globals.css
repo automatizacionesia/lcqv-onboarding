@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-crudo text-electricidad;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+  
+  h1 {
+    @apply text-3xl font-light italic text-electricidad;
+  }
+  
+  h2 {
+    @apply text-2xl font-light italic text-electricidad;
+  }
+  
+  h3 {
+    @apply text-xl font-light italic text-electricidad;
+  }
+  
+  p {
+    @apply text-base text-electricidad;
+  }
+  
+  button {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  input, textarea, select {
+    @apply bg-white border border-frescura rounded-md px-4 py-2 text-electricidad focus:outline-none focus:ring-2 focus:ring-agilidad focus:border-transparent;
+  }
+  
+  label {
+    @apply font-medium text-electricidad;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-agilidad text-white font-bold py-2 px-6 rounded-md hover:bg-agilidad/90 transition-all duration-300 shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-frescura text-electricidad font-bold py-2 px-6 rounded-md hover:bg-frescura/90 transition-all duration-300 shadow-md;
+  }
+  
+  .form-control {
+    @apply mb-6;
+  }
+  
+  .form-label {
+    @apply block mb-2 text-electricidad font-medium;
+  }
+  
+  .form-input {
+    @apply w-full rounded-md border border-frescura bg-white px-4 py-2 text-electricidad focus:border-agilidad focus:outline-none focus:ring-2 focus:ring-agilidad focus:border-transparent;
+  }
+  
+  .form-select {
+    @apply w-full rounded-md border border-frescura bg-white px-4 py-2 text-electricidad focus:border-agilidad focus:outline-none focus:ring-2 focus:ring-agilidad focus:border-transparent;
+  }
+  
+  .form-textarea {
+    @apply w-full rounded-md border border-frescura bg-white px-4 py-2 text-electricidad focus:border-agilidad focus:outline-none focus:ring-2 focus:ring-agilidad focus:border-transparent;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 border border-frescura/30;
+  }
+  
+  .input-error {
+    @apply text-red-500 text-sm mt-1;
+  }
+  
+  .loader {
+    @apply w-6 h-6 border-2 border-t-agilidad border-r-agilidad border-b-agilidad border-l-transparent rounded-full animate-spin;
+  }
+}
