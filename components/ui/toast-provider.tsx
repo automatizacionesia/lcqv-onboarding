@@ -13,18 +13,10 @@ export function ToastProvider() {
           color: '#090A5C', // Electricidad
           border: '1px solid #ACD4EF', // Frescura
         },
-        success: {
-          style: {
-            border: '1px solid #5B7CFD', // Agilidad
-            background: 'white',
-          },
-        },
-        error: {
-          style: {
-            border: '1px solid #FF4A4A', // Color de error
-            background: 'white',
-          },
-        },
+        classNames: {
+          success: 'border-[#5B7CFD] bg-white', // Agilidad
+          error: 'border-[#FF4A4A] bg-white', // Color de error
+        }
       }}
     />
   );
