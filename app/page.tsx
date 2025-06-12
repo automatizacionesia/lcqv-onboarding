@@ -70,7 +70,7 @@ export default function HomePage() {
       setIsLoading(true);
       
       // Mostrar toast de carga
-      const loadingToastId = notify.loading('Validando ID...');
+      const loadingToastId: string = String(notify.loading('Validando ID...'));
       
       // Llamar al webhook para validar el ID
       const response = await apiService.validateId(id);
