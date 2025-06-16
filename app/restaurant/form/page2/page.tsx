@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUser } from '@/context/UserContext';
 import { FaStar } from "react-icons/fa";
+import { uploadToMinio } from './minioUpload';
 
 interface FormData {
   horariosAtencion: string;
@@ -25,10 +26,10 @@ interface FormData {
   manejaEventos: boolean;
   descripcionEventos: string;
   linkMenu: string;
-  menuPDF: File | null;
+  menuPDF: string | null;
   metodosPago: string;
   lenguajeMarca: string;
-  logo: File | null;
+  logo: string | null;
   correoContacto: string;
   numeroNotificaciones: string;
   tipoMenu: 'link' | 'pdf' | null;
@@ -106,17 +107,20 @@ export default function RestaurantForm2() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const convertFileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      if (!(file instanceof Blob)) {
-        reject(new Error('El archivo no es válido'));
-        return;
+  const handleFileUpload = async (file: File, type: 'pdf' | 'logo') => {
+    if (!file) return;
+    try {
+      let url = '';
+      if (type === 'pdf') {
+        url = await uploadToMinio({ file, bucket: 'menusdeclientes' });
+        setForm(prev => ({ ...prev, menuPDF: url }));
+      } else if (type === 'logo') {
+        url = await uploadToMinio({ file, bucket: 'logosdeclientes' });
+        setForm(prev => ({ ...prev, logo: url }));
       }
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
+    } catch (error) {
+      alert('Error al subir el archivo. Intenta nuevamente.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,29 +132,11 @@ export default function RestaurantForm2() {
 
     setIsSubmitting(true);
     try {
-      // Convertir archivos a base64
-      let menuPDFBase64 = null;
-      let logoBase64 = null;
-
-      try {
-        if (form.menuPDF) {
-          menuPDFBase64 = await convertFileToBase64(form.menuPDF);
-        }
-        if (form.logo) {
-          logoBase64 = await convertFileToBase64(form.logo);
-        }
-      } catch (error) {
-        console.error('Error al procesar archivos:', error);
-        alert('Hubo un error al procesar los archivos. Por favor, asegúrate de que los archivos sean válidos e intenta nuevamente.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Preparar los datos para el webhook
+      // Enviar solo las URLs
       const formData = {
         ...form,
-        menuPDF: menuPDFBase64,
-        logo: logoBase64,
+        menuPDF: typeof form.menuPDF === 'string' ? form.menuPDF : '',
+        logo: typeof form.logo === 'string' ? form.logo : '',
         id: userData?.id || '',
         timestamp: new Date().toISOString()
       };
@@ -439,10 +425,10 @@ export default function RestaurantForm2() {
                 <input
                   type="file"
                   accept=".pdf"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file && file instanceof Blob) {
-                      setForm(prev => ({ ...prev, menuPDF: file }));
+                      await handleFileUpload(file, 'pdf');
                     } else {
                       alert('Por favor, selecciona un archivo PDF válido');
                     }
@@ -481,10 +467,10 @@ export default function RestaurantForm2() {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
+              onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (file && file instanceof Blob) {
-                  setForm(prev => ({ ...prev, logo: file }));
+                  await handleFileUpload(file, 'logo');
                 } else {
                   alert('Por favor, selecciona una imagen válida');
                 }
