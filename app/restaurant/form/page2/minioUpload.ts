@@ -12,6 +12,13 @@ const minioConfig = {
 
 const s3 = new S3Client(minioConfig);
 
+function normalizeFileName(name: string): string {
+  return name
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar tildes
+    .replace(/[^a-zA-Z0-9._-]/g, '_') // solo letras, números, punto, guion y guion bajo
+    .replace(/_+/g, '_'); // evitar múltiples guiones bajos
+}
+
 export async function uploadToMinio({
   file,
   bucket,
@@ -21,7 +28,7 @@ export async function uploadToMinio({
   bucket: string;
   folder?: string;
 }): Promise<string> {
-  const fileName = `${folder}${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+  const fileName = `${folder}${Date.now()}_${normalizeFileName(file.name)}`;
   const arrayBuffer = await file.arrayBuffer();
   const params = {
     Bucket: bucket,

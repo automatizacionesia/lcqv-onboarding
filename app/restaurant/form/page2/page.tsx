@@ -67,6 +67,8 @@ export default function RestaurantForm2() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<any>({});
+  const [uploading, setUploading] = useState<{pdf: boolean, logo: boolean}>({pdf: false, logo: false});
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
   // Cargar datos guardados
   useEffect(() => {
@@ -110,15 +112,24 @@ export default function RestaurantForm2() {
   const handleFileUpload = async (file: File, type: 'pdf' | 'logo') => {
     if (!file) return;
     try {
-      let url = '';
       if (type === 'pdf') {
-        url = await uploadToMinio({ file, bucket: 'menusdeclientes' });
+        setUploading(u => ({...u, pdf: true}));
+        setUploadMessage('Subiendo PDF, por favor espera...');
+        const url = await uploadToMinio({ file, bucket: 'menusdeclientes' });
         setForm(prev => ({ ...prev, menuPDF: url }));
+        setUploading(u => ({...u, pdf: false}));
+        setUploadMessage(null);
       } else if (type === 'logo') {
-        url = await uploadToMinio({ file, bucket: 'logosdeclientes' });
+        setUploading(u => ({...u, logo: true}));
+        setUploadMessage('Subiendo logotipo, por favor espera...');
+        const url = await uploadToMinio({ file, bucket: 'logosdeclientes' });
         setForm(prev => ({ ...prev, logo: url }));
+        setUploading(u => ({...u, logo: false}));
+        setUploadMessage(null);
       }
     } catch (error) {
+      setUploading({pdf: false, logo: false});
+      setUploadMessage(null);
       alert('Error al subir el archivo. Intenta nuevamente.');
     }
   };
@@ -129,7 +140,20 @@ export default function RestaurantForm2() {
       console.log('Errores de validación:', errors);
       return;
     }
-
+    // Bloquear si está subiendo archivos
+    if (uploading.pdf || uploading.logo) {
+      alert('Por favor espera a que terminen de subirse los archivos antes de continuar.');
+      return;
+    }
+    // Si el usuario seleccionó PDF, asegurarse que haya link
+    if (form.tipoMenu === 'pdf' && !form.menuPDF) {
+      alert('Por favor espera a que termine de subirse el PDF antes de continuar.');
+      return;
+    }
+    if (!form.logo) {
+      alert('Por favor espera a que termine de subirse el logotipo antes de continuar.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       // Enviar solo las URLs
@@ -549,10 +573,14 @@ export default function RestaurantForm2() {
             </p>
           </div>
 
+          {uploadMessage && (
+            <div className="text-center text-electricidad font-semibold mb-2 animate-pulse">{uploadMessage}</div>
+          )}
+
           <motion.button
             type="submit"
             className="btn-primary w-full mt-6"
-            disabled={isSubmitting}
+            disabled={isSubmitting || uploading.pdf || uploading.logo}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
