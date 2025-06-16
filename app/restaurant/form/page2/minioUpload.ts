@@ -28,7 +28,6 @@ export async function uploadToMinio({
     Key: fileName,
     Body: new Uint8Array(arrayBuffer),
     ContentType: file.type,
-    ACL: 'public-read',
   };
   await s3.send(new PutObjectCommand(params));
   // URL pública
