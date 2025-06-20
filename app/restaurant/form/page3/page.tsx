@@ -62,7 +62,7 @@ export default function RestaurantForm3() {
 
           <div className="aspect-w-16 aspect-h-9 mb-8">
             <iframe
-              src="https://www.loom.com/embed/359f66e0144f4c6281fb0cd9495a4f65"
+              src="https://www.loom.com/embed/6506acc415f54843ac851102d87bfd29"
               allowFullScreen
               className="w-full h-full rounded-lg"
             ></iframe>
