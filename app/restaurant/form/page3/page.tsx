@@ -53,11 +53,11 @@ export default function RestaurantForm3() {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl md:text-4xl font-bold text-electricidad mb-6">
-            🎉 ¡Felicidades {userData?.name || 'restaurante'}! 🎉
+            🎉 ¡Felicidades! 🎉
           </h1>
           
           <p className="text-xl text-frescura mb-8">
-            Solamente te queda ver este video, gracias por confiar en nosotros y estamos seguros que lograremos tener un gran trabajo en conjunto! ✨
+            ¡Gracias por completar tu registro! Estamos emocionados de trabajar contigo y ayudarte a hacer crecer tu restaurante. Pronto nos pondremos en contacto contigo para comenzar este increíble viaje juntos.
           </p>
 
           <div className="aspect-w-16 aspect-h-9 mb-8">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/logo';
 import LoadingSpinner from '@/components/shared/loading-spinner';
@@ -16,6 +16,13 @@ export default function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { setUserData, setIsLoading } = useUser();
+
+  // Limpiar toasts al desmontar el componente
+  useEffect(() => {
+    return () => {
+      notify.dismissAll();
+    };
+  }, []);
 
   // Animaciones para elementos
   const containerVariants = {
@@ -65,18 +72,23 @@ export default function HomePage() {
     setError(null);
     setIsSubmitting(true);
     
+    let loadingToastId: string | null = null;
+    
     try {
       // Indicar que estamos cargando
       setIsLoading(true);
       
       // Mostrar toast de carga
-      const loadingToastId: string = String(notify.loading('Validando ID...'));
+      loadingToastId = String(notify.loading('Validando ID...'));
       
       // Llamar al webhook para validar el ID
       const response = await apiService.validateId(id);
       
       // Quitar toast de carga
-      notify.dismiss(loadingToastId);
+      if (loadingToastId) {
+        notify.dismiss(loadingToastId);
+        loadingToastId = null;
+      }
       
       if (response.success && response.userType && response.data) {
         // Mostrar toast de éxito
@@ -108,9 +120,20 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error('Error validating ID:', error);
+      
+      // Asegurar que se cierre el toast de loading en caso de error
+      if (loadingToastId) {
+        notify.dismiss(loadingToastId);
+      }
+      
       notify.error('Error de conexión. Por favor, verifica tu conexión e intenta nuevamente.');
       setError('Error de conexión. Por favor, verifica tu conexión e intenta nuevamente.');
     } finally {
+      // Asegurar que se cierre el toast de loading en el finally
+      if (loadingToastId) {
+        notify.dismiss(loadingToastId);
+      }
+      
       setIsSubmitting(false);
       setIsLoading(false);
     }

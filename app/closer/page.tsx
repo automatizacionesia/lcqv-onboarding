@@ -17,28 +17,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Valores por defecto para el formulario
 const defaultFormData: CloserFormData = {
+  closerName: '',
   restaurantName: '',
   package: 'mensual',
   amountPaid: 0,
   adsAmount: 0,
-  hasGuarantee: false,
-  closerName: '',
   instagram: '',
-  adsPlatform: 'Meta',
+  hasGuarantee: false,
   branchCount: 1,
   notes: '',
 };
 
 // Tipos para errores del formulario
 interface FormErrors {
+  closerName?: string;
   restaurantName?: string;
   package?: string;
   amountPaid?: string;
   adsAmount?: string;
-  closerName?: string;
   instagram?: string;
-  adsPlatform?: string;
+  hasGuarantee?: string;
   branchCount?: string;
+  notes?: string;
 }
 
 // Componente principal para la página del Closer
@@ -56,6 +56,13 @@ export default function CloserPage() {
   
   // Autoguardado del formulario cada 30 segundos
   const { save } = useAutoSave('closerFormData', formData);
+  
+  // Limpiar toasts al desmontar el componente
+  useEffect(() => {
+    return () => {
+      notify.dismissAll();
+    };
+  }, []);
   
   // Redireccionar si no está autenticado o no es un closer
   useEffect(() => {
@@ -98,56 +105,35 @@ export default function CloserPage() {
   // Validar campos del formulario
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+    // Validar closer
+    const closerNameError = validators.required(formData.closerName);
+    if (closerNameError) newErrors.closerName = closerNameError;
     // Validar nombre del restaurante
     const restaurantNameError = validators.required(formData.restaurantName);
-    if (restaurantNameError) {
-      newErrors.restaurantName = restaurantNameError;
-    }
-    
+    if (restaurantNameError) newErrors.restaurantName = restaurantNameError;
     // Validar paquete
     const packageError = validators.required(formData.package);
-    if (packageError) {
-      newErrors.package = packageError;
-    }
-    
+    if (packageError) newErrors.package = packageError;
     // Validar monto pagado
     const amountPaidError = validators.required(formData.amountPaid) || 
       validators.number(formData.amountPaid) ||
       validators.minValue(formData.amountPaid, 0);
-    if (amountPaidError) {
-      newErrors.amountPaid = amountPaidError;
-    }
-    
+    if (amountPaidError) newErrors.amountPaid = amountPaidError;
     // Validar presupuesto para ADS
     const adsAmountError = validators.required(formData.adsAmount) || 
       validators.number(formData.adsAmount) ||
       validators.minValue(formData.adsAmount, 0);
-    if (adsAmountError) {
-      newErrors.adsAmount = adsAmountError;
-    }
-    
-    // Validar nombre del closer
-    const closerNameError = validators.required(formData.closerName);
-    if (closerNameError) {
-      newErrors.closerName = closerNameError;
-    }
-    
+    if (adsAmountError) newErrors.adsAmount = adsAmountError;
     // Validar Instagram
     if (!formData.instagram || formData.instagram.trim() === '') {
       newErrors.instagram = 'El usuario de Instagram es obligatorio';
     }
-    
-    // Validar plataforma de pauta
-    if (!formData.adsPlatform) {
-      newErrors.adsPlatform = 'Selecciona una plataforma de pauta';
-    }
-    
+    // Validar garantía (no requerido, pero debe ser booleano)
     // Validar número de sedes
     if (!formData.branchCount || formData.branchCount < 1) {
       newErrors.branchCount = 'Debe haber al menos una sede';
     }
-    
+    // Notas no es requerido
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -162,14 +148,19 @@ export default function CloserPage() {
     
     setIsSubmitting(true);
     
+    let loadingToastId: string | null = null;
+    
     try {
       // Mostrar toast de carga
-      const loadingToastId: string = String(notify.loading('Generando ID único...'));
+      loadingToastId = String(notify.loading('Generando ID único...'));
       
       const response = await apiService.generateId(formData);
       
       // Quitar toast de carga
-      notify.dismiss(loadingToastId);
+      if (loadingToastId) {
+        notify.dismiss(loadingToastId);
+        loadingToastId = null;
+      }
       
       if (response.success && response.data) {
         // Mostrar toast de éxito
@@ -189,8 +180,19 @@ export default function CloserPage() {
       }
     } catch (error) {
       console.error('Error generando ID:', error);
+      
+      // Asegurar que se cierre el toast de loading en caso de error
+      if (loadingToastId) {
+        notify.dismiss(loadingToastId);
+      }
+      
       notify.error('Error de conexión. Por favor, verifica tu conexión e intenta nuevamente.');
     } finally {
+      // Asegurar que se cierre el toast de loading en el finally
+      if (loadingToastId) {
+        notify.dismiss(loadingToastId);
+      }
+      
       setIsSubmitting(false);
     }
   };
@@ -419,8 +421,19 @@ export default function CloserPage() {
                   onSubmit={handleSubmit}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{ delay: 0.3, duration: 0.4 }}
+                  className="grid grid-cols-1 gap-6 sm:gap-8 w-full"
                 >
+                  <InputField
+                    id="closerName"
+                    label="Closer que cerró la venta"
+                    value={formData.closerName}
+                    onChange={(value) => handleInputChange('closerName', value)}
+                    error={errors.closerName}
+                    required
+                    className=""
+                  />
                   <InputField
                     id="restaurantName"
                     label="Nombre del restaurante"
@@ -428,115 +441,85 @@ export default function CloserPage() {
                     onChange={(value) => handleInputChange('restaurantName', value)}
                     error={errors.restaurantName}
                     required
-                    className="mb-6"
+                    className=""
                   />
-                  
                   <SelectField
                     id="package"
                     label="Paquete contratado"
                     value={formData.package}
                     onChange={(value) => handleInputChange('package', value)}
                     options={[
-                      { value: 'mensual', label: 'Mensual' },
-                      { value: '3months', label: '3 meses' },
-                      { value: '6months', label: '6 meses' },
+                      { value: 'mensual', label: 'Paquete mensual' },
+                      { value: '3months', label: 'Paquete de 3 meses' },
+                      { value: '6months', label: 'Paquete de 6 meses' },
                     ]}
                     error={errors.package}
                     required
-                    className="mb-6"
+                    className=""
                   />
-                  
                   <InputField
                     id="amountPaid"
-                    label="Monto pagado"
+                    label="¿Cuánto pagó el cliente en total por el paquete? (Mensual, trimestral o semestral)"
                     value={formData.amountPaid !== undefined && formData.amountPaid !== null ? formData.amountPaid.toString() : ''}
                     onChange={(value: string) => handleInputChange('amountPaid', Number(value))}
                     type="number"
                     prefix="$"
                     error={errors.amountPaid}
                     required
-                    className="mb-6"
+                    className=""
                     min={0}
                   />
-                  
                   <InputField
                     id="adsAmount"
-                    label="Presupuesto para ADS"
+                    label="¿Cuál será el gasto en ADS?"
                     value={formData.adsAmount !== undefined && formData.adsAmount !== null ? formData.adsAmount.toString() : ''}
                     onChange={(value: string) => handleInputChange('adsAmount', Number(value))}
                     type="number"
                     prefix="$"
                     error={errors.adsAmount}
                     required
-                    className="mb-6"
+                    className=""
                     min={0}
                   />
-                  
-                  <ToggleField
-                    id="hasGuarantee"
-                    label="¿Tiene garantía?"
-                    value={formData.hasGuarantee}
-                    onChange={(value) => handleInputChange('hasGuarantee', value)}
-                    className="mb-6"
-                  />
-                  
-                  <InputField
-                    id="closerName"
-                    label="Nombre del closer"
-                    value={formData.closerName}
-                    onChange={(value) => handleInputChange('closerName', value)}
-                    error={errors.closerName}
-                    required
-                    className="mb-6"
-                  />
-                  
                   <InputField
                     id="instagram"
-                    label="Usuario de Instagram"
+                    label="Usuario de Instagram del restaurante"
                     value={formData.instagram}
                     onChange={(value) => handleInputChange('instagram', value)}
                     error={errors.instagram}
                     required
-                    className="mb-6"
+                    className=""
                   />
-                  
-                  <SelectField
-                    id="adsPlatform"
-                    label="¿La pauta será solo a Meta o Meta y TikTok?"
-                    value={formData.adsPlatform}
-                    onChange={(value) => handleInputChange('adsPlatform', value)}
-                    options={[
-                      { value: 'Meta', label: 'Meta' },
-                      { value: 'Meta y TikTok', label: 'Meta y TikTok' },
-                    ]}
-                    error={errors.adsPlatform}
-                    required
-                    className="mb-6"
+                  <ToggleField
+                    id="hasGuarantee"
+                    label="¿Entran con garantía?"
+                    value={formData.hasGuarantee}
+                    onChange={(value) => handleInputChange('hasGuarantee', value)}
+                    className=""
                   />
-                  
                   <InputField
                     id="branchCount"
                     label="¿Número de sedes que vamos a manejar?"
                     value={formData.branchCount !== undefined && formData.branchCount !== null ? formData.branchCount.toString() : ''}
                     onChange={(value: string) => handleInputChange('branchCount', Number(value))}
                     type="number"
-                    min={1}
                     error={errors.branchCount}
                     required
-                    className="mb-6"
+                    className=""
+                    min={1}
                   />
-                  
                   <TextareaField
                     id="notes"
-                    label="¿Recomendaciones importantes sobre la pauta o algo que debamos saber?"
+                    label="¿Recomendaciones importantes sobre la pauta o algo que debamos saber sobre pagos, referidos o algo en particular?"
                     value={formData.notes}
                     onChange={(value) => handleInputChange('notes', value)}
-                    className="mb-6"
+                    error={errors.notes}
+                    className=""
+                    rows={3}
                   />
-                  
                   <motion.button
                     type="submit"
-                    className="btn-primary w-full"
+                    className="btn-primary w-full mt-2"
                     disabled={isSubmitting}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}

@@ -25,10 +25,15 @@ export const notify = {
     });
   },
   loading: (message: string) => {
-    return toast.loading(message);
+    return toast.loading(message, {
+      duration: 10000, // 10 segundos máximo para toasts de carga
+    });
   },
   dismiss: (toastId: string) => {
     toast.dismiss(toastId);
+  },
+  dismissAll: () => {
+    toast.dismiss();
   },
 };
 

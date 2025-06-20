@@ -77,7 +77,7 @@ export default function RestaurantWelcome() {
       if (existingSession.form2Completed) {
         router.push('/restaurant/form/page3');
       } else if (existingSession.form1Completed) {
-        router.push('/restaurant/form/page2');
+        router.push('/restaurant/form/page3');
       } else {
         router.push('/restaurant/form');
       }
@@ -131,7 +131,7 @@ export default function RestaurantWelcome() {
         if (existingSession.form2Completed) {
           router.push('/restaurant/form/page3');
         } else if (existingSession.form1Completed) {
-          router.push('/restaurant/form/page2');
+          router.push('/restaurant/form/page3');
         } else {
           router.push('/restaurant/form');
         }

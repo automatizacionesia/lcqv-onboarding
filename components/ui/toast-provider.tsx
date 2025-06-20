@@ -17,8 +17,9 @@ export function ToastProvider() {
           success: 'border-[#5B7CFD] bg-white', // Agilidad
           error: 'border-[#FF4A4A] bg-white', // Color de error
         },
-        duration: 3000, // Duración por defecto de 3 segundos
+        duration: 3500, // Duración por defecto de 3.5 segundos
         closeButton: true, // Mostrar botón de cierre
+        dismissible: true, // Permitir cerrar manualmente
       }}
     />
   );

@@ -28,7 +28,7 @@ export interface CloserFormData {
   hasGuarantee: boolean;
   closerName: string;
   instagram: string;
-  adsPlatform: 'Meta' | 'Meta y TikTok';
+  adsPlatform?: 'Meta' | 'Meta y TikTok';
   branchCount: number;
   notes: string;
 }
