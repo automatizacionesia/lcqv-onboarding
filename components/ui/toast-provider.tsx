@@ -19,7 +19,6 @@ export function ToastProvider() {
         },
         duration: 3500, // Duración por defecto de 3.5 segundos
         closeButton: true, // Mostrar botón de cierre
-        dismissible: true, // Permitir cerrar manualmente
       }}
     />
   );
