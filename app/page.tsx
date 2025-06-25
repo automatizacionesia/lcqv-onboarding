@@ -86,7 +86,7 @@ export default function HomePage() {
       
       // Quitar toast de carga
       if (loadingToastId) {
-        notify.dismiss(loadingToastId);
+      notify.dismiss(loadingToastId);
         loadingToastId = null;
       }
       
@@ -109,6 +109,8 @@ export default function HomePage() {
           // Guardar los datos en localStorage y redirigir a la pantalla de carga
           localStorage.setItem('restaurantData', JSON.stringify(response.data));
           router.push('/restaurant');
+        } else if (response.userType === 'problemas') {
+          router.push('/problemas');
         } else {
           // Para otros tipos de usuario, mostrar mensaje por ahora
           notify.info(`Acceso como ${response.userType} - Implementación en progreso`);

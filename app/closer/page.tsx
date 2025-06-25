@@ -14,6 +14,7 @@ import apiService from '@/lib/api';
 import { useLocalStorage, useAutoSave } from '@/hooks/useLocalStorage';
 import { useUser } from '@/context/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { uploadToMinio } from '../problemas/minioUpload';
 
 // Valores por defecto para el formulario
 const defaultFormData: CloserFormData = {
@@ -28,6 +29,12 @@ const defaultFormData: CloserFormData = {
   notes: '',
 };
 
+// Ampliar CloserFormData para los nuevos campos
+interface ExtendedCloserFormData extends CloserFormData {
+  comprobantePago?: string | null;
+  valorMensualidad?: number | null;
+}
+
 // Tipos para errores del formulario
 interface FormErrors {
   closerName?: string;
@@ -39,17 +46,21 @@ interface FormErrors {
   hasGuarantee?: string;
   branchCount?: string;
   notes?: string;
+  comprobantePago?: string;
+  valorMensualidad?: string;
 }
 
 // Componente principal para la página del Closer
 export default function CloserPage() {
   // Estado para el manejo de formulario
-  const [formData, setFormData] = useLocalStorage<CloserFormData>('closerFormData', defaultFormData);
+  const [formData, setFormData] = useLocalStorage<ExtendedCloserFormData>('closerFormData', { ...defaultFormData, comprobantePago: null, valorMensualidad: null });
   const [errors, setErrors] = useState<FormErrors>({});
   const [generatedId, setGeneratedId] = useState<string | null>(null);
   const [idMessage, setIdMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasPreviousSession, setHasPreviousSession] = useState(false);
+  const [uploadingComprobante, setUploadingComprobante] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   
   const { userData, isLoading } = useUser();
   const router = useRouter();
@@ -87,7 +98,7 @@ export default function CloserPage() {
   }, [userData, isLoading, router]);
   
   // Manejar cambios en los campos del formulario
-  const handleInputChange = (field: keyof CloserFormData, value: any) => {
+  const handleInputChange = (field: keyof ExtendedCloserFormData, value: any) => {
     setFormData({
       ...formData,
       [field]: value,
@@ -99,6 +110,24 @@ export default function CloserPage() {
         ...errors,
         [field]: undefined,
       });
+    }
+  };
+  
+  // Manejar subida de comprobante
+  const handleComprobanteUpload = async (file: File) => {
+    if (!file) return;
+    try {
+      setUploadingComprobante(true);
+      setUploadMessage('Subiendo comprobante, por favor espera...');
+      const url = await uploadToMinio({ file, bucket: 'imagenespropias' });
+      setFormData((prev: ExtendedCloserFormData) => ({ ...prev, comprobantePago: url }));
+      setUploadingComprobante(false);
+      setUploadMessage('¡Comprobante subido con éxito!');
+      setTimeout(() => setUploadMessage(null), 3000);
+    } catch (error) {
+      setUploadingComprobante(false);
+      setUploadMessage('Error al subir el comprobante. Intenta nuevamente.');
+      setTimeout(() => setUploadMessage(null), 3000);
     }
   };
   
@@ -134,6 +163,16 @@ export default function CloserPage() {
       newErrors.branchCount = 'Debe haber al menos una sede';
     }
     // Notas no es requerido
+    // Validar comprobante de pago
+    if (!formData.comprobantePago) {
+      (newErrors as any).comprobantePago = 'El comprobante de pago es obligatorio';
+    }
+    // Validar valor mensualidad
+    if (formData.valorMensualidad === undefined || formData.valorMensualidad === null || isNaN(Number(formData.valorMensualidad))) {
+      (newErrors as any).valorMensualidad = 'El valor de la mensualidad es obligatorio';
+    } else if (Number(formData.valorMensualidad) < 0) {
+      (newErrors as any).valorMensualidad = 'El valor debe ser mayor o igual a 0';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -490,6 +529,41 @@ export default function CloserPage() {
                     required
                     className=""
                   />
+                  <InputField
+                    id="valorMensualidad"
+                    label="¿En qué valor quedó la mensualidad del cliente?"
+                    value={formData.valorMensualidad !== undefined && formData.valorMensualidad !== null ? formData.valorMensualidad.toString() : ''}
+                    onChange={(value: string) => handleInputChange('valorMensualidad', Number(value))}
+                    type="number"
+                    prefix="$"
+                    error={errors.valorMensualidad}
+                    required
+                    className=""
+                    min={0}
+                  />
+                  <div>
+                    <label className="block font-medium mb-2">Adjunta el comprobante del pago del cliente</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files && handleComprobanteUpload(e.target.files[0])}
+                      className="w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-frescura/20 file:text-electricidad
+                        hover:file:bg-frescura/30"
+                    />
+                    {uploadingComprobante && <p className="text-sm text-electricidad mt-2">{uploadMessage}</p>}
+                    {!uploadingComprobante && uploadMessage && <p className="text-sm text-green-600 mt-2">{uploadMessage}</p>}
+                    {errors.comprobantePago && <p className="text-red-500 text-sm mt-1">{errors.comprobantePago}</p>}
+                    {formData.comprobantePago && !uploadingComprobante && (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium">Comprobante subido:</p>
+                        <img src={formData.comprobantePago} alt="Comprobante" className="mt-2 rounded-md max-h-48" />
+                      </div>
+                    )}
+                  </div>
                   <ToggleField
                     id="hasGuarantee"
                     label="¿Entran con garantía?"

@@ -56,7 +56,7 @@ export const apiService = {
       console.log('Respuesta del webhook:', data);
       
       // Verificar el campo respuesta del webhook
-      if (!data.respuesta || !['closer', 'restaurante', 'admin', 'id_no_existe'].includes(data.respuesta)) {
+      if (!data.respuesta || !['closer', 'restaurante', 'admin', 'id_no_existe', 'problemas'].includes(data.respuesta)) {
         return {
           success: false,
           message: 'Error de validación. Por favor, intenta nuevamente.',

@@ -153,7 +153,7 @@ export default function RestaurantForm() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 w-full">
           <div>
             <label className="block font-medium mb-2 text-electricidad">País del restaurante *</label>
-            <input 
+                  <input
               className="w-full rounded-md border border-frescura bg-white px-4 py-3 text-electricidad focus:border-agilidad focus:outline-none focus:ring-2 focus:ring-agilidad transition-all duration-300" 
               value={form.pais} 
               onChange={e => handleChange("pais", e.target.value)}
@@ -161,7 +161,7 @@ export default function RestaurantForm() {
             />
             {errors.pais && <span className="text-red-500 text-sm mt-1">{errors.pais}</span>}
           </div>
-          
+
           <div>
             <label className="block font-medium mb-2 text-electricidad">Ciudad del restaurante *</label>
             <input 

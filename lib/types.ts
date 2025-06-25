@@ -2,7 +2,7 @@
 
 export interface UserData {
   id: string;
-  userType: 'closer' | 'restaurante' | 'admin' | null;
+  userType: 'closer' | 'restaurante' | 'admin' | 'problemas' | null;
   name?: string;
   state?: 'initial' | 'pt1' | 'pt2' | 'completed';
 }
@@ -16,7 +16,7 @@ export interface WebhookResponse {
     respuesta: string;
     [key: string]: any;
   };
-  userType?: 'closer' | 'restaurante' | 'admin' | null;
+  userType?: 'closer' | 'restaurante' | 'admin' | 'problemas' | null;
   error?: string;
 }
 
