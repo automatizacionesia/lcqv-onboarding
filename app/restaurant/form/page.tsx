@@ -193,23 +193,29 @@ export default function RestaurantForm() {
           </div>
           
           <div>
-            <label className="block font-medium mb-2 text-electricidad">Nombre de la empresa (RUT) *</label>
+            <label className="block font-medium mb-2 text-electricidad">Nombre de la empresa</label>
             <input 
               className="w-full rounded-md border border-frescura bg-white px-4 py-3 text-electricidad focus:border-agilidad focus:outline-none focus:ring-2 focus:ring-agilidad transition-all duration-300" 
               value={form.empresa} 
               onChange={e => handleChange("empresa", e.target.value)}
               placeholder="Nombre tal y como aparece en el documento fiscal (RFC, CUIT, NIF, EIN, etc)" 
             />
+            <div className="text-sm text-electricidad/80 mt-1 bg-frescura/10 p-2 rounded-md mb-1">
+              Escribe el nombre completo tal como aparece en tus documentos fiscales oficiales
+            </div>
             {errors.empresa && <span className="text-red-500 text-sm mt-1">{errors.empresa}</span>}
           </div>
           
           <div>
-            <label className="block font-medium mb-2 text-electricidad">Número de identificación fiscal o NIT *</label>
+            <label className="block font-medium mb-2 text-electricidad">Número de identificación fiscal</label>
             <input 
               className="w-full rounded-md border border-frescura bg-white px-4 py-3 text-electricidad focus:border-agilidad focus:outline-none focus:ring-2 focus:ring-agilidad transition-all duration-300" 
               value={form.nit} 
               onChange={e => handleChange("nit", e.target.value)} 
             />
+            <div className="text-sm text-electricidad/80 mt-1 bg-frescura/10 p-2 rounded-md mb-1">
+              Ej: NIT en Colombia, CUIT en Argentina, RFC en México, EIN en EE.UU. etc
+            </div>
             {errors.nit && <span className="text-red-500 text-sm mt-1">{errors.nit}</span>}
           </div>
           
