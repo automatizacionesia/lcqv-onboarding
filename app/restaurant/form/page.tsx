@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUser } from '@/context/UserContext';
+import AutocompleteField from "@/components/shared/AutocompleteField";
+import { paises } from "@/lib/countries";
 
 interface Contacto {
   nombre: string;
@@ -99,12 +101,16 @@ export default function RestaurantForm() {
     setIsSubmitting(true);
     
     try {
+      // Buscar el emoji del país seleccionado
+      const paisObj = paises.find(p => p.nombre === form.pais);
+      const emoji = paisObj ? paisObj.emoji : "";
       // Enviar datos al webhook 1
       await fetch("https://webhook.lacocinaquevende.com/webhook/ingresardatosuserpt1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          emoji,
           id: userData?.id || ''
         }),
       });
@@ -152,14 +158,17 @@ export default function RestaurantForm() {
         
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 w-full">
           <div>
-            <label className="block font-medium mb-2 text-electricidad">País del restaurante *</label>
-                  <input
-              className="w-full rounded-md border border-frescura bg-white px-4 py-3 text-electricidad focus:border-agilidad focus:outline-none focus:ring-2 focus:ring-agilidad transition-all duration-300" 
-              value={form.pais} 
-              onChange={e => handleChange("pais", e.target.value)}
-              placeholder="País del restaurante" 
+            <AutocompleteField
+              id="pais"
+              label="País del restaurante *"
+              value={form.pais}
+              onChange={value => handleChange("pais", value)}
+              options={paises.map(p => ({ value: p.nombre, label: `${p.emoji} ${p.nombre}` }))}
+              error={errors.pais}
+              required
+              placeholder="Busca y selecciona el país"
+              className="mb-2"
             />
-            {errors.pais && <span className="text-red-500 text-sm mt-1">{errors.pais}</span>}
           </div>
 
           <div>
