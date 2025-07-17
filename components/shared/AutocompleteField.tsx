@@ -19,6 +19,11 @@ interface AutocompleteFieldProps {
   className?: string;
 }
 
+// Función para normalizar texto (eliminar tildes y pasar a minúsculas)
+function normalize(str: string) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 const AutocompleteField: React.FC<AutocompleteFieldProps> = ({
   id,
   label,
@@ -40,7 +45,7 @@ const AutocompleteField: React.FC<AutocompleteFieldProps> = ({
   useEffect(() => {
     setFiltered(
       options.filter(opt =>
-        opt.label.toLowerCase().includes(inputValue.toLowerCase())
+        normalize(opt.label).includes(normalize(inputValue))
       )
     );
     setHighlighted(-1);

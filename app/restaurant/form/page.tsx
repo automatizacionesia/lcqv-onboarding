@@ -114,9 +114,26 @@ export default function RestaurantForm() {
           id: userData?.id || ''
         }),
       });
-      
-      // Redirigir a la página de despedida
-      router.push('/restaurant/form/page3');
+      // Obtener datos de restaurante del localStorage
+      const dataStr = localStorage.getItem("restaurantData");
+      let fidelizacion = false;
+      if (dataStr) {
+        try {
+          const data = JSON.parse(dataStr);
+          // Puede venir como booleano o string
+          if (typeof data.fidelizacion === 'boolean') {
+            fidelizacion = data.fidelizacion;
+          } else if (typeof data.fidelizacion === 'string') {
+            fidelizacion = data.fidelizacion === 'true';
+          }
+        } catch {}
+      }
+      // Redirigir según fidelización
+      if (fidelizacion) {
+        router.push('/restaurant/form/fidelizacion');
+      } else {
+        router.push('/restaurant/form/page3');
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {

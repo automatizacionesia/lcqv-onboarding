@@ -111,6 +111,8 @@ export default function HomePage() {
           router.push('/restaurant');
         } else if (response.userType === 'problemas') {
           router.push('/problemas');
+        } else if (response.userType === 'problemas_colab') {
+          router.push('/problemas/colaboradores');
         } else {
           // Para otros tipos de usuario, mostrar mensaje por ahora
           notify.info(`Acceso como ${response.userType} - Implementación en progreso`);

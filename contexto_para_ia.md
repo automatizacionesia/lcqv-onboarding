@@ -1,168 +1,56 @@
-# Contexto Profundo de Webhooks y Lógica Externa
+# Cambios y contexto recientes (junio 2024)
 
-## 1. Endpoints y Webhooks Utilizados
+## Resumen de la conversación y cambios implementados
 
-### Webhooks principales
-- **Validación de ID**
-  - **Endpoint:** `https://webhook.lacocinaquevende.com/webhook/ingresoonb`
-  - **Función:** Valida el ID ingresado por el usuario y determina el tipo de usuario (`closer`, `restaurante`, `admin`, `id_no_existe`).
-  - **Uso:** Página principal (`/`), función `apiService.validateId(id)`.
+1. **Contexto y exploración inicial**: Se leyó y entendió el archivo `contexto_para_ia.md` y la estructura del proyecto, identificando rutas, componentes, helpers, hooks y la lógica de los webhooks principales para construir un contexto integral para la IA.
 
-- **Generación de ID (para closers)**
-  - **Endpoint:** `https://webhook.lacocinaquevende.com/webhook/idclosers`
-  - **Función:** Permite a los closers crear un nuevo ID único para un restaurante.
-  - **Uso:** Página `/closer`, función `apiService.generateId(formData)`.
+2. **Regla de documentación**: Todo cambio relevante debe documentarse en `contexto_para_ia.md`.
 
-- **Onboarding Restaurante - Formulario Consolidado**
-  - **Endpoint:** `https://webhook.lacocinaquevende.com/webhook/ingresardatosuserpt1`
-  - **Función:** Recibe los datos consolidados del restaurante (solo campos de la Lista Blanca).
-  - **Uso:** Página `/restaurant/form`, envío de formulario único.
+3. **Funcionalidad para closers**: Se agregó el campo booleano "¿El cliente iniciará con el proyecto de fidelización?" al formulario de closers, usando un toggle igual al de garantía. Se actualizó la interfaz `CloserFormData`, el formulario y la documentación.
 
----
+4. **Flujo de fidelización para restaurantes**: Tras validar el ID y si el campo `fidelizacion` es true, se muestra una nueva página después del formulario y antes de la despedida. Se creó la ruta `/restaurant/form/fidelizacion` con un mensaje "en construcción" y se documentó el cambio.
 
-## 2. Lógica de Integración y Flujo
+5. **Formulario de fidelización**: Se implementó el formulario de fidelización con campos para datos del administrador, regla de puntos, premios, términos y condiciones, y el envío de datos al webhook, incluyendo nombre del restaurante y país. El formulario incluye validaciones, feedback visual y envío de datos.
 
-### Validación de ID (Landing Page)
-- El usuario ingresa un ID.
-- Se llama a `apiService.validateId(id)` (POST a `/ingresoonb`).
-- El backend responde con el tipo de usuario y datos asociados.
-- Según el tipo de usuario:
-  - **closer:** Redirige a `/closer`.
-  - **restaurante:** Guarda datos en localStorage y redirige a `/restaurant`.
-  - **admin/otros:** Muestra mensaje de implementación en progreso.
+6. **Selector de país para teléfono**: Se implementó un selector de país con bandera y código internacional solo para el campo de teléfono en fidelización, usando un listado propio. El buscador ignora tildes y mayúsculas/minúsculas, y se usó un AutocompleteField igual al del formulario anterior.
 
-### Generación de ID (Closer)
-- El closer llena un formulario con datos del restaurante y su venta.
-- Se llama a `apiService.generateId(formData)` (POST a `/idclosers`).
-- El backend responde con el nuevo ID y un mensaje para el cliente.
-- El closer puede copiar el mensaje y generar nuevos IDs.
+7. **Selector de moneda**: Se creó un listado de todas las divisas del mundo con nombre, código, símbolo y bandera, y se agregó un AutocompleteField para seleccionar la moneda en el formulario de fidelización. El valor se envía al webhook.
 
-### Onboarding Restaurante (REFACTORIZADO - Formulario Único)
-- **Formulario Consolidado:**
-  - El restaurante llena únicamente los campos de la "Lista Blanca".
-  - Se envían todos los datos a `/ingresardatosuserpt1`.
-  - Se guarda el progreso en localStorage.
-  - Se redirige directamente a la página de despedida.
-- **Página de Despedida:**
-  - Pantalla de felicitación y cierre, sin integración externa.
+8. **Calculadora de puntos recomendados**: Se implementó una sección donde el usuario elige el nivel de recompensa (2%, 3%, 5%) y, según la moneda, se calcula automáticamente la regla recomendada (tick base y puntos), rellenando los campos de la regla de oro con valores sugeridos pero editables. Todo es responsivo y visualmente consistente.
 
-### Campos de la Lista Blanca (Únicos permitidos)
-1. País del restaurante
-2. Ciudad del restaurante
-3. Nombre del representante legal
-4. ID del documento del representante legal
-5. Nombre de la empresa (RUT)
-6. Número de identificación fiscal o NIT
-7. Correo de Gmail en el que puedan ver documentos de Google Drive
-8. Correo corporativo del restaurante (puede ser el mismo de arriba)
+9. **Ajustes de integración**: Se corrigió el envío de datos al webhook para que, en vez de nombreRestaurante y país (que podían ir vacíos), se envíe el id del usuario autenticado.
+
+10. **Consultas sobre clonado y prompts**: Se documentó cómo clonar el proyecto para un nuevo repo y cómo pedirle a una IA que genere un proyecto igual, o solo la página de fidelización, con ejemplos de prompts.
+
+11. **Documentación**: Todos los cambios relevantes fueron documentados en `contexto_para_ia.md` según la instrucción inicial.
+
+12. **Validaciones y experiencia de usuario**: Se mejoró la experiencia de búsqueda en los selectores para ignorar tildes y se aseguró que la selección funcione correctamente. Se corrigieron errores de linter y se mantuvo la responsividad y consistencia visual en todo momento.
 
 ---
 
-## 3. Tipos de Datos y Respuestas
+## [2024-06-XX] Nueva página: Registro de problemas de colaboradores
 
-### Respuesta de Validación de ID
-```ts
-interface WebhookResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    id: string;
-    message: string;
-    respuesta: string; // 'closer', 'restaurante', 'admin', 'id_no_existe'
-    [key: string]: any;
-  };
-  userType?: 'closer' | 'restaurante' | 'admin' | null;
-  error?: string;
-}
-```
+- **Ruta:** `/problemas/colaboradores`
+- **Acceso:** Solo usuarios con `userType === 'problemas_colab'` (redirige automáticamente tras validación de ID).
+- **Propósito:** Permite registrar advertencias/problemas asociados a colaboradores (no restaurantes).
+- **Flujo:**
+  1. Menú inicial con opciones "Registrar" y "Visualizar" (igual que advertencias a restaurantes).
+  2. Al registrar, se carga el listado de colaboradores desde el webhook `devolverusuarios`.
+  3. El formulario tiene los campos:
+     - **Colaborador/a:** Selector Autocomplete (opciones desde `Nombre del restaurante` del webhook).
+     - **Motivo:** Campo de texto largo.
+     - **Pruebas:** Dos opciones exclusivas:
+       - **Imagen:** Permite subir una imagen (se sube a Minio, bucket `liosdecolaboradores`).
+       - **Loom:** Permite ingresar un link de Loom.
+     - Solo uno de los dos es obligatorio según la selección.
+  4. El formulario valida que se haya subido la prueba correspondiente.
+  5. Al enviar, los datos se mandan al webhook `registrarproblemacolab`.
+  6. Feedback visual y notificaciones en todo el flujo.
+- **Detalles técnicos:**
+  - El campo enviado al webhook se llama siempre `pruebas` (link de imagen o link de Loom).
+  - El bucket de Minio debe existir (`liosdecolaboradores`).
+  - El AutocompleteField fue adaptado para usar la clave correcta (`Nombre del restaurante`).
+  - El menú de pruebas usa dos botones para alternar entre imagen y Loom, mostrando solo el input correspondiente.
+  - El flujo de validación y UX es idéntico al de advertencias a restaurantes, pero adaptado a colaboradores.
 
-### Datos enviados por el closer
-```ts
-interface CloserFormData {
-  restaurantName: string;
-  package: 'mensual' | '3months' | '6months';
-  amountPaid: number;
-  adsAmount: number;
-  hasGuarantee: boolean;
-  closerName: string;
-  instagram: string;
-  adsPlatform?: 'Meta' | 'Meta y TikTok'; // Opcional
-  branchCount: number;
-  notes: string;
-}
-```
-
-### Datos del formulario consolidado de restaurante
-```ts
-interface FormData {
-  pais: string;
-  ciudad: string;
-  representante: string;
-  idRepresentante: string;
-  empresa: string;
-  nit: string;
-  gmail: string;
-  correoCorporativo: string;
-}
-```
-
----
-
-## 4. Utilidades y Helpers
-
-- **Notificaciones:**
-  - Se usa `sonner` para mostrar toasts de éxito, error, info y carga.
-- **Persistencia:**
-  - Se usa `storageHelper` para guardar datos en localStorage con expiración.
-- **Validadores:**
-  - Validaciones de campos requeridos, emails, números, etc.
-- **Contexto de Usuario:**
-  - Se maneja el usuario globalmente con React Context (`UserContext`).
-
----
-
-## 5. Resumen de Seguridad y Buenas Prácticas
-- Los endpoints de webhooks esperan datos bien formateados y validan el tipo de usuario.
-- El acceso a rutas está protegido según el tipo de usuario.
-- Los datos sensibles se guardan en localStorage solo lo necesario.
-- Las credenciales de Minio están embebidas en el frontend (¡mejorar esto en producción!).
-
----
-
-## 6. Diagrama de Flujo (REFACTORIZADO)
-
-```mermaid
-graph TD;
-  A[Usuario ingresa ID] --> B{Validar ID (webhook)}
-  B -- closer --> C[Redirige a /closer]
-  B -- restaurante --> D[Redirige a /restaurant]
-  C --> E[Closer genera ID (webhook)]
-  D --> F[Onboarding Formulario Único (webhook)]
-  F --> G[Página de Despedida (finaliza)]
-```
-
----
-
-## 7. Cambios de Refactorización Implementados
-
-### Eliminaciones:
-- Formulario 2 (`/restaurant/form/page2`) completamente eliminado
-- Subida de archivos a Minio eliminada
-- Campos de contactos de WhatsApp eliminados
-- Campos de servicios a potenciar eliminados
-- Barra de progreso eliminada
-- Lógica de sesiones compleja simplificada
-
-### Consolidaciones:
-- Un solo formulario con 8 campos de la Lista Blanca
-- Un solo webhook para todos los datos
-- Flujo directo: Formulario → Despedida
-- UI 100% responsive con grid y gap
-
-### Texto Actualizado:
-- Sección de WhatsApp actualizada según especificaciones
-- Mensaje de despedida simplificado y más directo
-
----
-
-Este archivo sirve como referencia integral para entender cómo se integran y usan los webhooks, qué datos se envían y reciben, y cómo se estructura el flujo de onboarding y generación de IDs en el sistema después de la refactorización crítica. 
+--- 

@@ -2,7 +2,7 @@
 
 export interface UserData {
   id: string;
-  userType: 'closer' | 'restaurante' | 'admin' | 'problemas' | null;
+  userType: 'closer' | 'restaurante' | 'admin' | 'problemas' | 'problemas_colab' | null;
   name?: string;
   state?: 'initial' | 'pt1' | 'pt2' | 'completed';
 }
@@ -16,7 +16,7 @@ export interface WebhookResponse {
     respuesta: string;
     [key: string]: any;
   };
-  userType?: 'closer' | 'restaurante' | 'admin' | 'problemas' | null;
+  userType?: 'closer' | 'restaurante' | 'admin' | 'problemas' | 'problemas_colab' | null;
   error?: string;
 }
 
@@ -26,6 +26,7 @@ export interface CloserFormData {
   amountPaid: number;
   adsAmount: number;
   hasGuarantee: boolean;
+  hasFidelization: boolean;
   closerName: string;
   instagram: string;
   adsPlatform?: 'Meta' | 'Meta y TikTok';

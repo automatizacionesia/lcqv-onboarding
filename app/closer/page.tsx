@@ -25,6 +25,7 @@ const defaultFormData: CloserFormData = {
   adsAmount: 0,
   instagram: '',
   hasGuarantee: false,
+  hasFidelization: false,
   branchCount: 1,
   notes: '',
 };
@@ -44,6 +45,7 @@ interface FormErrors {
   adsAmount?: string;
   instagram?: string;
   hasGuarantee?: string;
+  hasFidelization?: string;
   branchCount?: string;
   notes?: string;
   comprobantePago?: string;
@@ -569,6 +571,13 @@ export default function CloserPage() {
                     label="¿Entran con garantía?"
                     value={formData.hasGuarantee}
                     onChange={(value) => handleInputChange('hasGuarantee', value)}
+                    className=""
+                  />
+                  <ToggleField
+                    id="hasFidelization"
+                    label="¿El cliente iniciará con el proyecto de fidelización?"
+                    value={formData.hasFidelization}
+                    onChange={(value) => handleInputChange('hasFidelization', value)}
                     className=""
                   />
                   <InputField
